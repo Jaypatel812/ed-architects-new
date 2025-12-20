@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: Karla;
+  src: url("/fonts/Karla-Regular.ttf");
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Karla;
+  background-color: var(--color-ed-light-gray);
+}
+
+@theme {
+  --color-ed-light-gray: #e8e8e8;
+  --breakpoint-xs: 450px;
+}
