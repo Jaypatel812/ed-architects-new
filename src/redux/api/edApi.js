@@ -30,6 +30,32 @@ export const edApi = baseApi.injectEndpoints({
         method: "DELETE",
       }),
     }),
+    getProjects: builder.mutation({
+      query: () => ({
+        url: "/projects",
+        method: "GET",
+      }),
+    }),
+    addProject: builder.mutation({
+      query: (body) => ({
+        url: "/projects",
+        method: "POST",
+        body,
+      }),
+    }),
+    updateProject: builder.mutation({
+      query: (body) => ({
+        url: `/projects/${body._id}`,
+        method: "PUT",
+        body,
+      }),
+    }),
+    deleteProject: builder.mutation({
+      query: (id) => ({
+        url: `/projects/${id}`,
+        method: "DELETE",
+      }),
+    }),
   }),
 });
 
@@ -38,4 +64,8 @@ export const {
   useAddCategoryMutation,
   useUpdateCategoryMutation,
   useDeleteCategoryMutation,
+  useGetProjectsMutation,
+  useAddProjectMutation,
+  useUpdateProjectMutation,
+  useDeleteProjectMutation,
 } = edApi;

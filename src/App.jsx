@@ -13,6 +13,7 @@ import { LayoutWrapper } from "./components/admin/LayoutWrapper";
 import { Toaster } from "react-hot-toast";
 import { ProtectedRoute, PublicRoute } from "./components/admin/AuthWrapper";
 import Categories from "./app/admin/Categories";
+import AddNewProject from "./components/admin/AddNewProject";
 
 export default function App() {
   return (
@@ -42,6 +43,14 @@ export default function App() {
               element={
                 <LayoutWrapper>
                   <ProjectList />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/ed/admin/projects/new"
+              element={
+                <LayoutWrapper>
+                  <AddNewProject />
                 </LayoutWrapper>
               }
             />

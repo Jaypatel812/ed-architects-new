@@ -79,14 +79,14 @@ const InputField = ({
       <div className="relative">
         <div
           className={`
-                            flex items-center border border-slate-400 rounded-md bg-white ${
+                            flex items-center border border-slate-300 rounded-md bg-white ${
                               Icon ? "pl-2" : ""
                             }
                             ${
                               error
                                 ? "border-red-500"
                                 : isFocused
-                                ? "border-blue-800"
+                                ? "border-blue-500!"
                                 : ""
                             }
                             ${
