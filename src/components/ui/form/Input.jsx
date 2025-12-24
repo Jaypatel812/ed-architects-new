@@ -110,9 +110,8 @@ const InputField = ({
             type={inputType(type)}
             className={`
                                 w-full py-2 rounded-md focus:outline-none 
-                                disabled:bg-gray-100  ml-2
+                                disabled:bg-gray-100 pl-2
                                 ${type === "password" ? "pr-1" : ""}
-                                ${Icon ? "pl-2" : "pl-1"}
                                 ${inputStyle ? inputStyle : ""}
                             `}
             onChange={handleChange}

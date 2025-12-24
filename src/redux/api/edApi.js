@@ -36,6 +36,12 @@ export const edApi = baseApi.injectEndpoints({
         method: "GET",
       }),
     }),
+    getProjectById: builder.mutation({
+      query: (id) => ({
+        url: `/projects/${id}`,
+        method: "GET",
+      }),
+    }),
     addProject: builder.mutation({
       query: (body) => ({
         url: "/projects",
@@ -56,6 +62,38 @@ export const edApi = baseApi.injectEndpoints({
         method: "DELETE",
       }),
     }),
+    getBlogs: builder.mutation({
+      query: () => ({
+        url: "/blogs",
+        method: "GET",
+      }),
+    }),
+    getBlogById: builder.mutation({
+      query: (id) => ({
+        url: `/blogs/${id}`,
+        method: "GET",
+      }),
+    }),
+    addBlog: builder.mutation({
+      query: (body) => ({
+        url: "/blogs",
+        method: "POST",
+        body,
+      }),
+    }),
+    updateBlog: builder.mutation({
+      query: (body) => ({
+        url: `/blogs/${body._id}`,
+        method: "PUT",
+        body,
+      }),
+    }),
+    deleteBlog: builder.mutation({
+      query: (id) => ({
+        url: `/blogs/${id}`,
+        method: "DELETE",
+      }),
+    }),
   }),
 });
 
@@ -65,7 +103,13 @@ export const {
   useUpdateCategoryMutation,
   useDeleteCategoryMutation,
   useGetProjectsMutation,
+  useGetProjectByIdMutation,
   useAddProjectMutation,
   useUpdateProjectMutation,
   useDeleteProjectMutation,
+  useGetBlogsMutation,
+  useGetBlogByIdMutation,
+  useAddBlogMutation,
+  useUpdateBlogMutation,
+  useDeleteBlogMutation,
 } = edApi;

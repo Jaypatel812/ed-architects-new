@@ -2,13 +2,47 @@ import React, { useEffect, useState } from "react";
 import { DataTable } from "../../components/ui/table/DataTable";
 import Button from "../../components/ui/Button";
 import { BiPlus } from "react-icons/bi";
-import { useGetProjectsMutation } from "../../redux/api/edApi";
+import {
+  useGetProjectsMutation,
+  useDeleteProjectMutation,
+} from "../../redux/api/edApi";
 import { useNavigate } from "react-router-dom";
+import { LuEye, LuSearch, LuTrash2 } from "react-icons/lu";
+import toast from "react-hot-toast";
+import InputField from "../../components/ui/form/Input";
 
 const Projects = () => {
   const navigate = useNavigate();
   const [getProjects] = useGetProjectsMutation();
+  const [deleteProject] = useDeleteProjectMutation();
   const [projects, setProjects] = useState([]);
+
+  const fetchProjects = async () => {
+    try {
+      const res = await getProjects().unwrap();
+      if (res.success) {
+        setProjects(res.data);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this project?"))
+      return;
+    try {
+      const res = await deleteProject(id).unwrap();
+      if (res.success) {
+        toast.success("Project Deleted Successfully");
+        fetchProjects();
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to delete project");
+    }
+  };
+
   const columns = [
     {
       header: "Sr No",
@@ -43,37 +77,47 @@ const Projects = () => {
       cell: (info) => info.row.original.siteArea || "-",
     },
     {
+      header: "Image",
+      accessorKey: "image",
+      // width: 200,
+      cell: (info) => info.row.original.images.length,
+    },
+    {
       header: "Status",
       accessorKey: "status",
       width: 150,
       cell: (info) => info.row.original.status || "-",
     },
     {
-      header: "Image",
-      accessorKey: "image",
-      width: 200,
-      cell: (info) => info.row.original.images.length,
+      header: "Action",
+      accessorKey: "action",
+      width: 150,
+      cell: (info) => (
+        <div className="flex items-center gap-4">
+          <LuEye
+            size={16}
+            className="cursor-pointer text-gray-500"
+            onClick={() =>
+              navigate(`/ed/admin/projects/${info.row.original._id}`)
+            }
+          />
+          <LuTrash2
+            size={16}
+            className="cursor-pointer text-red-500"
+            onClick={() => handleDelete(info.row.original._id)}
+          />
+        </div>
+      ),
     },
   ];
-
-  const fetchProjects = async () => {
-    try {
-      const res = await getProjects().unwrap();
-      if (res.success) {
-        setProjects(res.data);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
 
   useEffect(() => {
     fetchProjects();
   }, []);
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Projects</h1>
+      <div className="flex items-center justify-between bg-white p-4 rounded-md shadow-xs">
+        <InputField placeholder="Search" icon={LuSearch} />
         <Button onClick={() => navigate("/ed/admin/projects/new")}>
           <BiPlus /> Add Project
         </Button>

@@ -12,6 +12,7 @@ export default function UploadFile({
   buttonText = "Browse Files",
   onUpload = () => {},
   multiple = false,
+  disabled = false,
 }) {
   const [files, setFiles] = useState([]);
   const fileInputRef = useRef(null);
@@ -88,35 +89,37 @@ export default function UploadFile({
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-col items-center w-full gap-4 py-6 border-2 border-dashed border-slate-300 rounded-xl min-h-56">
-        <div className="text-sm font-bold text-center text-black">
-          <LuFileInput
-            name="upload"
-            className="h-auto mx-auto mb-4 w-14 text-slate-300"
-          />
-          Upload Files
-        </div>
-        <span className="text-slate-900 text-sm">{text} </span>
+      {!disabled && (
+        <div className="flex flex-col items-center w-full gap-4 py-6 border-2 border-dashed border-slate-300 rounded-xl min-h-56">
+          <div className="text-sm font-bold text-center text-black">
+            <LuFileInput
+              name="upload"
+              className="h-auto mx-auto mb-4 w-14 text-slate-300"
+            />
+            Upload Files
+          </div>
+          <span className="text-slate-900 text-sm">{text} </span>
 
-        <Button
-          variant="secondary"
-          className="relative border rounded-lg disabled:opacity-50"
-          disabled={isUploading}
-          onClick={() => fileInputRef.current?.click()}
-        >
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept={accept}
-            multiple={multiple}
-            className="hidden"
-            id="sectionHiddenFile"
-            onChange={handleFileUpload}
-          />
-          {isUploading && <Spinner size="5" />}
-          {buttonText}
-        </Button>
-      </div>
+          <Button
+            variant="secondary"
+            className="relative border rounded-lg disabled:opacity-50"
+            disabled={isUploading || disabled}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept={accept}
+              multiple={multiple}
+              className="hidden"
+              id="sectionHiddenFile"
+              onChange={handleFileUpload}
+            />
+            {isUploading && <Spinner size="5" />}
+            {buttonText}
+          </Button>
+        </div>
+      )}
 
       {/* Display uploaded files */}
       {showPreview && files.length > 0 && (
@@ -142,11 +145,13 @@ export default function UploadFile({
                 </span>
               </div>
 
-              <LuX
-                size={18}
-                className="ms-auto text-gray-500 cursor-pointer hover:text-red-500"
-                onClick={() => removeFile(index)}
-              />
+              {!disabled && (
+                <LuX
+                  size={18}
+                  className="ms-auto text-gray-500 cursor-pointer hover:text-red-500"
+                  onClick={() => removeFile(index)}
+                />
+              )}
             </div>
           ))}
         </div>

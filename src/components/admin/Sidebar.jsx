@@ -26,8 +26,7 @@ export const Sidebar = ({ isOpen, setIsOpen }) => {
   const menuItems = [
     { icon: BiHome, label: "Categories", href: "/ed/admin/categories" },
     { icon: GoProjectRoadmap, label: "Projects", href: "/ed/admin/projects" },
-    { icon: GoProjectRoadmap, label: "Blog", href: "/ed/admin/blog" },
-    { icon: BiBarChart, label: "Analytics", href: "/ed/admin/analytics" },
+    { icon: GoProjectRoadmap, label: "Blog", href: "/ed/admin/blogs" },
   ];
 
   const handleNavigation = (href) => {

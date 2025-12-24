@@ -14,6 +14,10 @@ import { Toaster } from "react-hot-toast";
 import { ProtectedRoute, PublicRoute } from "./components/admin/AuthWrapper";
 import Categories from "./app/admin/Categories";
 import AddNewProject from "./components/admin/AddNewProject";
+import EditProject from "./components/admin/EditProject";
+import Blogs from "./app/admin/Blogs";
+import AddNewBlog from "./components/admin/AddNewBlog";
+import EditBlog from "./components/admin/EditBlog";
 
 export default function App() {
   return (
@@ -51,6 +55,38 @@ export default function App() {
               element={
                 <LayoutWrapper>
                   <AddNewProject />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/ed/admin/projects/:id"
+              element={
+                <LayoutWrapper>
+                  <EditProject />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/ed/admin/blogs"
+              element={
+                <LayoutWrapper>
+                  <Blogs />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/ed/admin/blogs/new"
+              element={
+                <LayoutWrapper>
+                  <AddNewBlog />
+                </LayoutWrapper>
+              }
+            />
+            <Route
+              path="/ed/admin/blogs/:id"
+              element={
+                <LayoutWrapper>
+                  <EditBlog />
                 </LayoutWrapper>
               }
             />

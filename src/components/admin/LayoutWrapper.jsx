@@ -43,6 +43,8 @@ const useBreadcrumbs = () => {
     analytics: { label: "Analytics", href: "/ed/admin/analytics" },
     users: { label: "Users", href: "/ed/admin/users" },
     settings: { label: "Settings", href: "/ed/admin/settings" },
+    blogs: { label: "Blogs", href: "/ed/admin/blogs" },
+    categories: { label: "Categories", href: "/ed/admin/categories" },
   };
 
   // Always start with Admin as home
@@ -63,9 +65,25 @@ const useBreadcrumbs = () => {
         href: index === pathSegments.length - 1 ? null : fullPath,
       });
     } else {
-      // Fallback: capitalize segment name
+      // Check if segment is a MongoDB ID (24 hex characters)
+      const isMongoId = /^[0-9a-fA-F]{24}$/.test(segment);
+
+      let label = segment.charAt(0).toUpperCase() + segment.slice(1);
+
+      if (isMongoId) {
+        // Look at the previous breadcrumb to determine context
+        const prevLabel = breadcrumbs[breadcrumbs.length - 1]?.label;
+        if (prevLabel === "Projects") {
+          label = "Project Details";
+        } else if (prevLabel === "Blogs") {
+          label = "Blog Details";
+        } else {
+          label = "Details";
+        }
+      }
+
       breadcrumbs.push({
-        label: segment.charAt(0).toUpperCase() + segment.slice(1),
+        label: label,
         href: index === pathSegments.length - 1 ? null : fullPath,
       });
     }
