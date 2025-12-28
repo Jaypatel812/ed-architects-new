@@ -123,7 +123,13 @@ const Projects = () => {
         </Button>
       </div>
       <div>
-        <DataTable columns={columns} data={projects} />
+        {projects?.length > 0 ? (
+          <DataTable columns={columns} data={projects} />
+        ) : (
+          <div className="flex h-96 items-center justify-center">
+            No projects found
+          </div>
+        )}
       </div>
     </div>
   );

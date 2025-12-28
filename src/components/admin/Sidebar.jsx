@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BiBarChart, BiHome } from "react-icons/bi";
+import { BiBarChart, BiCategoryAlt, BiHome } from "react-icons/bi";
 import { FcCancel } from "react-icons/fc";
 import { useNavigate, useLocation } from "react-router-dom";
 import { GoProjectRoadmap } from "react-icons/go";
+import { LuLogOut } from "react-icons/lu";
 
 // Hook to detect if screen is desktop size (>= 1024px)
 function useIsDesktop() {
@@ -22,9 +23,10 @@ export const Sidebar = ({ isOpen, setIsOpen }) => {
   const isDesktop = useIsDesktop();
   const navigate = useNavigate();
   const location = useLocation();
+  const [userData, setUserData] = useState(null);
 
   const menuItems = [
-    { icon: BiHome, label: "Categories", href: "/ed/admin/categories" },
+    { icon: BiCategoryAlt, label: "Categories", href: "/ed/admin/categories" },
     { icon: GoProjectRoadmap, label: "Projects", href: "/ed/admin/projects" },
     { icon: GoProjectRoadmap, label: "Blog", href: "/ed/admin/blogs" },
   ];
@@ -34,6 +36,20 @@ export const Sidebar = ({ isOpen, setIsOpen }) => {
     if (!isDesktop) {
       setIsOpen(false);
     }
+  };
+
+  useEffect(() => {
+    const user = JSON.parse(sessionStorage.getItem("user"));
+    if (user) {
+      setUserData(user);
+    }
+  }, []);
+
+  const handleLogout = () => {
+    sessionStorage.removeItem("user");
+    sessionStorage.removeItem("token");
+    navigate("/ed/admin/login");
+    setIsOpen(false);
   };
 
   return (
@@ -91,7 +107,7 @@ export const Sidebar = ({ isOpen, setIsOpen }) => {
                 >
                   <button
                     onClick={() => handleNavigation(item.href)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-700/50 transition-all group ${
+                    className={`w-full flex items-center cursor-pointer gap-3 px-4 py-3 rounded-lg hover:bg-slate-700/50 transition-all group ${
                       location.pathname === item.href ? "bg-slate-700" : ""
                     }`}
                   >
@@ -112,11 +128,18 @@ export const Sidebar = ({ isOpen, setIsOpen }) => {
           <div className="p-4 border-t border-slate-700">
             <div className="flex items-center gap-3 px-4 py-3">
               <div className="w-10 h-10 rounded-full bg-linear-to-br from-blue-400 to-purple-500 flex items-center justify-center text-sm font-bold">
-                JD
+                {userData?.name?.split(" ")?.map((name) => name[0])}
               </div>
               <div className="flex-1">
-                <p className="text-sm font-medium">John Doe</p>
-                <p className="text-xs text-slate-400">john@example.com</p>
+                <p className="text-sm font-medium">{userData?.name}</p>
+                {/* <p className="text-xs text-slate-400">{userData?.email}</p> */}
+              </div>
+              <div>
+                <LuLogOut
+                  className="cursor-pointer"
+                  size={20}
+                  onClick={handleLogout}
+                />
               </div>
             </div>
           </div>

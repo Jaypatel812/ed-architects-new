@@ -94,7 +94,13 @@ const Blogs = () => {
         </Button>
       </div>
       <div>
-        <DataTable columns={columns} data={blogs} />
+        {blogs?.length > 0 ? (
+          <DataTable columns={columns} data={blogs} />
+        ) : (
+          <div className="flex h-96 items-center justify-center">
+            No blogs found
+          </div>
+        )}
       </div>
     </div>
   );

@@ -39,8 +39,13 @@ const Login = () => {
     try {
       const response = await loginMutation(userData).unwrap();
       if (response.statusCode === 200) {
+        const user = {
+          name: response.data.user.name,
+          email: response.data.user.email,
+        };
         toast.success("Login successful");
         sessionStorage.setItem("token", response.data.accessToken);
+        sessionStorage.setItem("user", JSON.stringify(user));
         navigate("/ed/admin/home");
       }
     } catch (error) {

@@ -12,6 +12,7 @@ import {
   LuCircle,
   LuLoaderCircle,
   LuPencil,
+  LuSearch,
   LuTrash,
   LuTrash2,
   LuX,
@@ -129,6 +130,7 @@ const Categories = () => {
         handleClose();
       }
     } catch (error) {
+      setError({ name: error?.data?.message || "Something went wrong" });
       console.log(error);
     }
   };
@@ -145,6 +147,8 @@ const Categories = () => {
         handleClose("delete");
       }
     } catch (error) {
+      toast.error(error?.data?.message || "Something went wrong");
+      handleClose("delete");
       console.log(error);
     }
   };
@@ -154,20 +158,28 @@ const Categories = () => {
   }, []);
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Categories</h1>
-        <Button onClick={() => setIsOpen(true)}>
-          <BiPlus /> Add Category
-        </Button>
-      </div>
-      {isLoading ? (
-        <div>Loading...</div>
-      ) : (
-        <div>
-          <DataTable columns={columns} data={categories} />
+    <div>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between bg-white p-4 rounded-md shadow-xs">
+          <InputField placeholder="Search" icon={LuSearch} />
+          <Button onClick={() => setIsOpen(true)}>
+            <BiPlus /> Add Category
+          </Button>
         </div>
-      )}
+        {isLoading ? (
+          <div>Loading...</div>
+        ) : (
+          <div>
+            {categories?.length > 0 ? (
+              <DataTable columns={columns} data={categories} />
+            ) : (
+              <div className="flex h-96 items-center justify-center">
+                No categories found
+              </div>
+            )}
+          </div>
+        )}
+      </div>
       <Modal isOpen={isOpen} onClose={handleClose}>
         <div className="space-y-4">
           <div className="text-2xl flex items-center justify-between min-w-96 font-semibold">
@@ -177,22 +189,43 @@ const Categories = () => {
           <InputField
             placeholder="Category Name"
             value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            onChange={(e) => {
+              setFormData({ ...formData, name: e.target.value });
+              setError({ name: "" });
+            }}
+            error={error.name}
           />
           <div className="flex items-center justify-end">
-            <Button onClick={() => handleSubmit()}>Save</Button>
+            <Button
+              onClick={() => handleSubmit()}
+              disabled={isAdding || isUpdating}
+            >
+              {isAdding || isUpdating ? (
+                <>
+                  <LuLoaderCircle className="animate-spin" /> Saving...
+                </>
+              ) : (
+                "Save"
+              )}
+            </Button>
           </div>
         </div>
       </Modal>
       <Modal isOpen={isDeleteOpen} onClose={handleClose}>
         <div className="space-y-4">
           <div>Are you sure you want to delete this category?</div>
-          <div className="flex items-center justify-end">
+          <div className="flex items-center gap-2 justify-end">
             <Button variant="secondary" onClick={() => handleClose("delete")}>
               Cancel
             </Button>
             <Button disabled={isDeleting} onClick={() => handleDelete()}>
-              {isDeleting ? "Deleting..." : "Delete"}
+              {isDeleting ? (
+                <>
+                  <LuLoaderCircle className="animate-spin" /> Deleting...
+                </>
+              ) : (
+                "Delete"
+              )}
             </Button>
           </div>
         </div>

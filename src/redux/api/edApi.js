@@ -31,9 +31,10 @@ export const edApi = baseApi.injectEndpoints({
       }),
     }),
     getProjects: builder.mutation({
-      query: () => ({
+      query: (q) => ({
         url: "/projects",
         method: "GET",
+        params: q,
       }),
     }),
     getProjectById: builder.mutation({
