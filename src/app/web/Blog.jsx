@@ -29,7 +29,7 @@ const Blog = () => {
           <LuLoaderCircle size={24} className="animate-spin" />
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 mt-4 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {blogs?.length > 0 ? (
             blogs?.map((blog, idx) => (
               <Link key={idx} to={`/blog/${blog._id}`} className="w-full">
