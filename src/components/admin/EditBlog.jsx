@@ -4,20 +4,27 @@ import InputLabelFormatWrapper from "../ui/form/InpuLabelWrapper";
 import UploadFile from "../ui/form/UploadFile";
 import TextArea from "../ui/form/TextArea";
 import Button from "../ui/Button";
-import { LuPlus, LuTrash2, LuPencil } from "react-icons/lu";
+import { LuPlus, LuTrash2, LuPencil, LuX } from "react-icons/lu";
 import Switch from "../ui/form/Switch";
 import {
   useGetBlogByIdMutation,
   useUpdateBlogMutation,
 } from "../../redux/api/edApi";
+import {
+  useUploadFileMutation,
+  useDeleteFileMutation,
+} from "../../redux/api/uploadApi";
 import toast from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
+import { IMAGE_BASE_URL } from "../../config/constant";
 
 const EditBlog = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [getBlogById] = useGetBlogByIdMutation();
   const [updateBlog] = useUpdateBlogMutation();
+  const [uploadFile, { isLoading: isUploading }] = useUploadFileMutation();
+  const [deleteFile] = useDeleteFileMutation();
 
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -26,6 +33,9 @@ const EditBlog = () => {
     description: [""],
     images: [],
   });
+  const [newFiles, setNewFiles] = useState([]);
+  const [imagesToDelete, setImagesToDelete] = useState([]);
+  const [fileResetKey, setFileResetKey] = useState(0);
   const [errors, setErrors] = useState({});
 
   const fetchBlogDetails = async () => {
@@ -43,6 +53,9 @@ const EditBlog = () => {
               : [""],
           images: blog.images || [],
         });
+        setImagesToDelete([]);
+        setNewFiles([]);
+        setFileResetKey((prev) => prev + 1);
       }
     } catch (error) {
       console.error("Failed to fetch blog details", error);
@@ -71,23 +84,65 @@ const EditBlog = () => {
       isValid = false;
     }
 
+    const totalImages = formData.images.length + newFiles.length;
+    if (totalImages === 0) {
+      toast.error("At least one image is required");
+      isValid = false;
+    }
+    if (totalImages > 12) {
+      toast.error("Maximum 12 images allowed");
+      isValid = false;
+    }
+
+    const isFileTooLarge = newFiles.some((file) => file.size > 5 * 1024 * 1024);
+    if (isFileTooLarge) {
+      toast.error("Each new image must be less than 5 MB");
+      isValid = false;
+    }
+
     setErrors(errors);
     return isValid;
+  };
+
+  const handleDeleteExisting = (index, imageUrl) => {
+    const updatedImages = formData.images.filter((_, i) => i !== index);
+    setFormData({ ...formData, images: updatedImages });
+    setImagesToDelete([...imagesToDelete, imageUrl]);
   };
 
   const handleSubmit = async () => {
     const isValid = validateForm();
     if (!isValid) return;
+
     try {
+      let uploadedImageUrls = [];
+
+      // 1. Upload new files if any
+      if (newFiles.length > 0) {
+        const uploadData = new FormData();
+        uploadData.append("folder", "blog");
+        newFiles.forEach((file) => {
+          uploadData.append("images", file);
+        });
+
+        const uploadRes = await uploadFile(uploadData).unwrap();
+        if (uploadRes && uploadRes.images) {
+          uploadedImageUrls = uploadRes.images;
+        } else {
+          toast.error("Image upload failed");
+          return;
+        }
+      }
+
+      // 2. Delete removed images
+      if (imagesToDelete.length > 0) {
+        await deleteFile({ imageUrls: imagesToDelete }).unwrap();
+      }
+
+      // 3. Update Blog
       const body = {
         ...formData,
-        // Mock images as we did in AddNewBlog if needed, or if we assume existing images are fine:
-        // User said "for now no api for images so put the single text in array as i done in the projects"
-        // In update scenarios, usually we keep existing if not changed, but if we follow Add logic strictly:
-        // We might want to ensure we don't break the array.
-        // If formData.images is empty, maybe push dummy link?
-        // Let's assume we just pass formData as is, but if images is empty and it's required...
-        // I will keep the implementation similar to EditProject where I just passed ...formData
+        images: [...formData.images, ...uploadedImageUrls],
       };
 
       const res = await updateBlog(body).unwrap();
@@ -97,7 +152,7 @@ const EditBlog = () => {
       }
     } catch (error) {
       console.error(error);
-      toast.error("Failed to update blog");
+      toast.error(error?.data?.message || "Failed to update blog");
     }
   };
 
@@ -174,14 +229,47 @@ const EditBlog = () => {
           )}
         </div>
 
-        <InputLabelFormatWrapper label="Images" required />
-        <UploadFile
-          multiple={true}
-          disabled={!isEditing}
-          onUpload={(file) =>
-            console.log("Upload logic implementation pending", file)
-          }
-        />
+        {/* Existing Images */}
+        <div className="flex flex-col gap-2">
+          <InputLabelFormatWrapper label="Existing Images" />
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {formData.images.map((imgUrl, index) => (
+              <div
+                key={index}
+                className="relative group border rounded-lg overflow-hidden h-32 w-full"
+              >
+                <img
+                  src={IMAGE_BASE_URL + imgUrl}
+                  alt={`blog-${index}`}
+                  className="w-full h-full object-cover"
+                />
+                {isEditing && (
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteExisting(index, imgUrl)}
+                    className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <LuX size={14} />
+                  </button>
+                )}
+              </div>
+            ))}
+            {formData.images.length === 0 && (
+              <p className="text-sm text-gray-500 col-span-full">
+                No existing images.
+              </p>
+            )}
+          </div>
+        </div>
+
+        {isEditing && (
+          <UploadFile
+            key={fileResetKey}
+            multiple={true}
+            onUpload={(files) => setNewFiles(files)}
+            isUploading={isUploading}
+          />
+        )}
 
         <div className="flex items-center gap-2">
           <label htmlFor="AcceptConditions">Status</label>
@@ -202,7 +290,9 @@ const EditBlog = () => {
               <Button onClick={() => setIsEditing(false)} variant="tertiary">
                 Cancel
               </Button>
-              <Button onClick={() => handleSubmit()}>Update</Button>
+              <Button onClick={() => handleSubmit()} disabled={isUploading}>
+                {isUploading ? "Updating..." : "Update"}
+              </Button>
             </>
           ) : (
             <Button

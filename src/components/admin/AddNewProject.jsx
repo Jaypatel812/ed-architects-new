@@ -13,11 +13,14 @@ import {
 } from "../../redux/api/edApi";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { useUploadFileMutation } from "../../redux/api/uploadApi";
 
 const AddNewProject = () => {
   const navigate = useNavigate();
   const [getCategories, { isLoading }] = useGetCategoriesMutation();
   const [addProject] = useAddProjectMutation();
+  const [uploadFile, { isLoading: isUploading }] = useUploadFileMutation();
+
   const [categories, setCategories] = useState([]);
   const [formData, setFormData] = useState({
     title: "",
@@ -30,6 +33,8 @@ const AddNewProject = () => {
     description: [""],
     images: [],
   });
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [fileResetKey, setFileResetKey] = useState(0);
   const [errors, setErrors] = useState({});
 
   const fetchCategories = async () => {
@@ -58,9 +63,25 @@ const AddNewProject = () => {
       errors.location = "Location is required";
       isValid = false;
     }
-    // if (!formData.images.length) {
-    //   errors.images = "Images are required";
-    // }
+
+    if (selectedFiles.length === 0) {
+      toast.error("At least one image is required");
+      isValid = false;
+    }
+
+    if (selectedFiles.length > 12) {
+      toast.error("Maximum 12 images allowed");
+      isValid = false;
+    }
+
+    const isFileTooLarge = selectedFiles.some(
+      (file) => file.size > 5 * 1024 * 1024
+    );
+    if (isFileTooLarge) {
+      toast.error("Each image must be less than 5 MB");
+      isValid = false;
+    }
+
     setErrors(errors);
     return isValid;
   };
@@ -68,11 +89,31 @@ const AddNewProject = () => {
   const handleSubmit = async () => {
     const isValid = validateForm();
     if (!isValid) return;
+
     try {
+      // 1. Upload Images
+      const uploadData = new FormData();
+      uploadData.append("folder", "project");
+      selectedFiles.forEach((file) => {
+        uploadData.append("images", file);
+      });
+
+      const uploadRes = await uploadFile(uploadData).unwrap();
+
+      let uploadedImageUrls = [];
+      if (uploadRes && uploadRes.images) {
+        uploadedImageUrls = uploadRes.images;
+      } else {
+        toast.error("Image upload failed");
+        return;
+      }
+
+      // 2. Add Project
       const body = {
         ...formData,
-        images: ["somelink"],
+        images: uploadedImageUrls,
       };
+
       const res = await addProject(body).unwrap();
       if (res.success) {
         toast.success("Project Added Successfully");
@@ -87,10 +128,13 @@ const AddNewProject = () => {
           description: [""],
           images: [],
         });
+        setSelectedFiles([]);
+        setFileResetKey((prev) => prev + 1);
         navigate("/ed/admin/projects");
       }
     } catch (error) {
       console.error(error);
+      toast.error(error?.data?.message || "Something went wrong");
     }
   };
 
@@ -219,7 +263,12 @@ const AddNewProject = () => {
             <LuPlus /> Add More
           </Button>
         </div>
-        <UploadFile multiple={true} onUpload={(file) => console.log(file)} />
+        <UploadFile
+          key={fileResetKey}
+          multiple={true}
+          onUpload={(files) => setSelectedFiles(files)}
+          isUploading={isUploading}
+        />
         <div className="flex items-center gap-2">
           <label htmlFor="AcceptConditions">Status</label>
           <Switch
@@ -239,7 +288,9 @@ const AddNewProject = () => {
           >
             Cancel
           </Button>
-          <Button onClick={() => handleSubmit()}>Submit</Button>
+          <Button onClick={() => handleSubmit()} disabled={isUploading}>
+            {isUploading ? "Uploading..." : "Submit"}
+          </Button>
         </div>
       </div>
     </div>

@@ -7,6 +7,7 @@ import {
   useGetProjectsMutation,
 } from "../../redux/api/edApi";
 import { LuLoader, LuLoaderCircle } from "react-icons/lu";
+import { IMAGE_BASE_URL } from "../../config/constant";
 
 const Projects = () => {
   const [tabs, setTabs] = useState(PROJECT_TAB_TYPES.ALL);
@@ -102,7 +103,7 @@ const Projects = () => {
                 <Link key={idx} to={`/project/${item._id}`} className="w-full">
                   <div className="relative w-full aspect-[2.2/1] group overflow-hidden">
                     <img
-                      src="/images/projects/project.jpeg"
+                      src={IMAGE_BASE_URL + item.images[0]}
                       alt={`project-${idx + 1}`}
                       className="object-cover cursor-pointer group-hover:opacity-70 transition-opacity shadow-sm hover:shadow-md"
                     />

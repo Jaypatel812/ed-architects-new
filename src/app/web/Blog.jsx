@@ -3,6 +3,7 @@ import Wrapper from "../../components/Wrapper";
 import { Link } from "react-router-dom";
 import { useGetBlogsMutation } from "../../redux/api/edApi";
 import { LuLoaderCircle } from "react-icons/lu";
+import { IMAGE_BASE_URL } from "../../config/constant";
 
 const Blog = () => {
   const [getBlogs, { isLoading }] = useGetBlogsMutation();
@@ -34,7 +35,7 @@ const Blog = () => {
               <Link key={idx} to={`/blog/${blog._id}`} className="w-full">
                 <div className="relative w-full aspect-[2.2/1] group overflow-hidden">
                   <img
-                    src="/images/blog/blog.jpg"
+                    src={IMAGE_BASE_URL + blog.images[0]}
                     alt={`blog-${idx + 1}`}
                     className="object-cover cursor-pointer group-hover:opacity-70 transition-opacity shadow-sm hover:shadow-md"
                   />

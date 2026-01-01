@@ -9,16 +9,21 @@ import Switch from "../ui/form/Switch";
 import { useAddBlogMutation } from "../../redux/api/edApi";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { useUploadFileMutation } from "../../redux/api/uploadApi";
 
 const AddNewBlog = () => {
   const navigate = useNavigate();
   const [addBlog] = useAddBlogMutation();
+  const [uploadFile, { isLoading: isUploading }] = useUploadFileMutation();
+
   const [formData, setFormData] = useState({
     title: "",
     status: "ACTIVE",
     description: [""],
     images: [],
   });
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [fileResetKey, setFileResetKey] = useState(0);
   const [errors, setErrors] = useState({});
 
   const validateForm = () => {
@@ -35,10 +40,23 @@ const AddNewBlog = () => {
       isValid = false;
     }
 
-    // Check images - although we mock the submission value, user requested "min 1 image" validation conceptually
-    // In AddProject, image validation was commented out.
-    // Since we are mocking the sent image, I will assume the UI validation might rely on the file upload state if we were really uploading.
-    // For now, I won't block on images state since we send ["somelink"], but I will keep the UI there.
+    if (selectedFiles.length === 0) {
+      toast.error("At least one image is required");
+      isValid = false;
+    }
+
+    if (selectedFiles.length > 12) {
+      toast.error("Maximum 12 images allowed");
+      isValid = false;
+    }
+
+    const isFileTooLarge = selectedFiles.some(
+      (file) => file.size > 5 * 1024 * 1024
+    );
+    if (isFileTooLarge) {
+      toast.error("Each image must be less than 5 MB");
+      isValid = false;
+    }
 
     setErrors(errors);
     return isValid;
@@ -47,12 +65,30 @@ const AddNewBlog = () => {
   const handleSubmit = async () => {
     const isValid = validateForm();
     if (!isValid) return;
+
     try {
+      // 1. Upload Images
+      const uploadData = new FormData();
+      uploadData.append("folder", "blog");
+      selectedFiles.forEach((file) => {
+        uploadData.append("images", file);
+      });
+
+      const uploadRes = await uploadFile(uploadData).unwrap();
+
+      let uploadedImageUrls = [];
+      if (uploadRes && uploadRes.images) {
+        uploadedImageUrls = uploadRes.images;
+      } else {
+        toast.error("Image upload failed");
+        return;
+      }
+
       const body = {
         ...formData,
-        // Mocking image as requested
-        images: ["somelink"],
+        images: uploadedImageUrls,
       };
+
       const res = await addBlog(body).unwrap();
       if (res.success) {
         toast.success("Blog Added Successfully");
@@ -62,11 +98,13 @@ const AddNewBlog = () => {
           description: [""],
           images: [],
         });
+        setSelectedFiles([]);
+        setFileResetKey((prev) => prev + 1);
         navigate("/ed/admin/blogs");
       }
     } catch (error) {
       console.error(error);
-      toast.error("Failed to add blog");
+      toast.error(error?.data?.message || "Failed to add blog");
     }
   };
 
@@ -131,7 +169,12 @@ const AddNewBlog = () => {
         </div>
 
         <InputLabelFormatWrapper label="Images" required />
-        <UploadFile multiple={true} onUpload={(file) => console.log(file)} />
+        <UploadFile
+          key={fileResetKey}
+          multiple={true}
+          onUpload={(files) => setSelectedFiles(files)}
+          isUploading={isUploading}
+        />
 
         <div className="flex items-center gap-2">
           <label htmlFor="AcceptConditions">Status</label>
@@ -152,7 +195,9 @@ const AddNewBlog = () => {
           >
             Cancel
           </Button>
-          <Button onClick={() => handleSubmit()}>Submit</Button>
+          <Button onClick={() => handleSubmit()} disabled={isUploading}>
+            {isUploading ? "Uploading..." : "Submit"}
+          </Button>
         </div>
       </div>
     </div>

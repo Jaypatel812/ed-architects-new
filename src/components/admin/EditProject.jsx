@@ -5,15 +5,20 @@ import SingleSelect from "../ui/form/SingleSelect";
 import UploadFile from "../ui/form/UploadFile";
 import TextArea from "../ui/form/TextArea";
 import Button from "../ui/Button";
-import { LuPlus, LuTrash2, LuPencil } from "react-icons/lu";
+import { LuPlus, LuTrash2, LuPencil, LuX } from "react-icons/lu";
 import Switch from "../ui/form/Switch";
 import {
   useGetProjectByIdMutation,
   useUpdateProjectMutation,
   useGetCategoriesMutation,
 } from "../../redux/api/edApi";
+import {
+  useUploadFileMutation,
+  useDeleteFileMutation,
+} from "../../redux/api/uploadApi";
 import toast from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
+import { IMAGE_BASE_URL } from "../../config/constant";
 
 const EditProject = () => {
   const { id } = useParams();
@@ -21,6 +26,8 @@ const EditProject = () => {
   const [getCategories] = useGetCategoriesMutation();
   const [getProjectById] = useGetProjectByIdMutation();
   const [updateProject] = useUpdateProjectMutation();
+  const [uploadFile, { isLoading: isUploading }] = useUploadFileMutation();
+  const [deleteFile] = useDeleteFileMutation();
 
   const [categories, setCategories] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
@@ -35,6 +42,9 @@ const EditProject = () => {
     description: [""],
     images: [],
   });
+  const [newFiles, setNewFiles] = useState([]);
+  const [imagesToDelete, setImagesToDelete] = useState([]);
+  const [fileResetKey, setFileResetKey] = useState(0);
   const [errors, setErrors] = useState({});
 
   const fetchCategories = async () => {
@@ -68,6 +78,9 @@ const EditProject = () => {
               : [""],
           images: project.images || [],
         });
+        setImagesToDelete([]);
+        setNewFiles([]);
+        setFileResetKey((prev) => prev + 1);
       }
     } catch (error) {
       console.error("Failed to fetch project details", error);
@@ -97,20 +110,67 @@ const EditProject = () => {
       errors.location = "Location is required";
       isValid = false;
     }
+
+    const totalImages = formData.images.length + newFiles.length;
+    if (totalImages === 0) {
+      toast.error("At least one image is required");
+      isValid = false;
+    }
+    if (totalImages > 12) {
+      toast.error("Maximum 12 images allowed");
+      isValid = false;
+    }
+
+    const isFileTooLarge = newFiles.some((file) => file.size > 5 * 1024 * 1024);
+    if (isFileTooLarge) {
+      toast.error("Each new image must be less than 5 MB");
+      isValid = false;
+    }
+
     setErrors(errors);
     return isValid;
+  };
+
+  const handleDeleteExisting = (index, imageUrl) => {
+    const updatedImages = formData.images.filter((_, i) => i !== index);
+    setFormData({ ...formData, images: updatedImages });
+    setImagesToDelete([...imagesToDelete, imageUrl]);
   };
 
   const handleSubmit = async () => {
     const isValid = validateForm();
     if (!isValid) return;
+
     try {
+      let uploadedImageUrls = [];
+
+      // 1. Upload new files if any
+      if (newFiles.length > 0) {
+        const uploadData = new FormData();
+        uploadData.append("folder", "project");
+        newFiles.forEach((file) => {
+          uploadData.append("images", file);
+        });
+
+        const uploadRes = await uploadFile(uploadData).unwrap();
+        if (uploadRes && uploadRes.images) {
+          uploadedImageUrls = uploadRes.images;
+        } else {
+          toast.error("Image upload failed");
+          return;
+        }
+      }
+
+      // 2. Delete removed images
+      if (imagesToDelete.length > 0) {
+        await deleteFile({ imageUrls: imagesToDelete }).unwrap();
+      }
+
+      // 3. Update Project
       const body = {
         ...formData,
+        images: [...formData.images, ...uploadedImageUrls],
       };
-      // Ensure images are preserved or handled effectively
-      // If no new images uploaded, we keep existing.
-      // Note: UploadFile implementation details are vague, assuming we just pass current state.
 
       const res = await updateProject(body).unwrap();
       if (res.success) {
@@ -119,7 +179,7 @@ const EditProject = () => {
       }
     } catch (error) {
       console.error(error);
-      toast.error("Failed to update project");
+      toast.error(error?.data?.message || "Failed to update project");
     }
   };
 
@@ -262,14 +322,49 @@ const EditProject = () => {
             </Button>
           )}
         </div>
-        <UploadFile
-          multiple={true}
-          disabled={!isEditing}
-          onUpload={(file) =>
-            console.log("Upload logic implementation pending", file)
-          }
-          // Note: Logic to show existing images would go here if UploadFile supports it
-        />
+
+        {/* Existing Images */}
+        <div className="flex flex-col gap-2">
+          <InputLabelFormatWrapper label="Existing Images" />
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {formData.images.map((imgUrl, index) => (
+              <div
+                key={index}
+                className="relative group border rounded-lg overflow-hidden h-32 w-full"
+              >
+                <img
+                  src={IMAGE_BASE_URL + imgUrl}
+                  alt={`project-${index}`}
+                  className="w-full h-full object-cover"
+                />
+                {isEditing && (
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteExisting(index, imgUrl)}
+                    className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <LuX size={14} />
+                  </button>
+                )}
+              </div>
+            ))}
+            {formData.images.length === 0 && (
+              <p className="text-sm text-gray-500 col-span-full">
+                No existing images.
+              </p>
+            )}
+          </div>
+        </div>
+
+        {isEditing && (
+          <UploadFile
+            key={fileResetKey}
+            multiple={true}
+            onUpload={(files) => setNewFiles(files)}
+            isUploading={isUploading}
+          />
+        )}
+
         <div className="flex items-center gap-2">
           <label htmlFor="AcceptConditions">Status</label>
           <Switch
@@ -289,7 +384,9 @@ const EditProject = () => {
               <Button onClick={() => setIsEditing(false)} variant="tertiary">
                 Cancel
               </Button>
-              <Button onClick={() => handleSubmit()}>Update</Button>
+              <Button onClick={() => handleSubmit()} disabled={isUploading}>
+                {isUploading ? "Updating..." : "Update"}
+              </Button>
             </>
           ) : (
             <Button
