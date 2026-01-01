@@ -100,7 +100,7 @@ const ProjectDetail = () => {
             <div className="text-center font-bold text-xl sm:text-2xl md:text-3xl leading-snug">
               {projectDetail?.title}
             </div>
-            <div className="flex justify-between gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 justify-between gap-2">
               <div>Location: {projectDetail?.location}</div>
               <div>Client: {projectDetail?.client}</div>
               <div>Built Up Area: {projectDetail?.builtUpArea || "N/A"}</div>

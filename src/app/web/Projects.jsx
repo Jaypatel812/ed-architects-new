@@ -8,6 +8,7 @@ import {
 } from "../../redux/api/edApi";
 import { LuLoader, LuLoaderCircle } from "react-icons/lu";
 import { IMAGE_BASE_URL } from "../../config/constant";
+import SingleSelect from "../../components/ui/form/SingleSelect";
 
 const Projects = () => {
   const [tabs, setTabs] = useState(PROJECT_TAB_TYPES.ALL);
@@ -78,17 +79,14 @@ const Projects = () => {
 
         {/* Dropdown for <md */}
         <div className="md:hidden">
-          <select
+          <SingleSelect
+            options={categories.map((category) => ({
+              value: category._id,
+              label: category.name,
+            }))}
             value={tabs}
-            onChange={(e) => setTabs(e.target.value)}
-            className="w-full border rounded-md p-2 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
-          >
-            {categories?.map((category) => (
-              <option key={category._id} value={category._id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
+            onChange={(val) => setTabs(val)}
+          />
         </div>
 
         {/* Project Grid */}
