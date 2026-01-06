@@ -7,7 +7,7 @@ import { Navigation, Autoplay } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
-import { IoChevronBack, IoChevronForward } from "react-icons/io5";
+import { IoChevronBack, IoChevronForward, IoClose } from "react-icons/io5";
 import { IMAGE_BASE_URL } from "../../config/constant";
 
 const ProjectDetail = () => {
@@ -17,6 +17,15 @@ const ProjectDetail = () => {
   const [prevEl, setPrevEl] = useState(null);
   const [nextEl, setNextEl] = useState(null);
   const swiperRef = useRef(null);
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [initialSlide, setInitialSlide] = useState(0);
+  const [fsPrevEl, setFsPrevEl] = useState(null);
+  const [fsNextEl, setFsNextEl] = useState(null);
+
+  const openFullScreen = (index) => {
+    setInitialSlide(index);
+    setIsFullScreen(true);
+  };
 
   const fetchProjectDetail = async () => {
     try {
@@ -32,6 +41,17 @@ const ProjectDetail = () => {
   useEffect(() => {
     fetchProjectDetail();
   }, [id]);
+
+  useEffect(() => {
+    if (isFullScreen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isFullScreen]);
 
   return (
     <Wrapper>
@@ -53,7 +73,8 @@ const ProjectDetail = () => {
                 }}
                 navigation={{ prevEl, nextEl }}
                 onSwiper={(swiper) => (swiperRef.current = swiper)}
-                className="h-full w-full"
+                onClick={(swiper) => openFullScreen(swiper.realIndex)}
+                className="h-full w-full cursor-pointer"
               >
                 {projectDetail.images.map((img, index) => (
                   <SwiperSlide key={index}>
@@ -88,7 +109,8 @@ const ProjectDetail = () => {
                   : "/images/projects/project.jpeg"
               }
               alt="project"
-              className="w-full max-w-4xl mx-auto aspect-video object-cover shadow-md"
+              className="w-full max-w-4xl mx-auto aspect-video object-cover shadow-md cursor-pointer"
+              onClick={() => openFullScreen(0)}
               width={800}
               height={800}
               priority="true"
@@ -112,6 +134,53 @@ const ProjectDetail = () => {
               ))}
             </div>
           </div>
+
+          {/* Full Screen Image Slider */}
+          {isFullScreen && (
+            <div className="fixed inset-0 z-[100] bg-black bg-opacity-95 flex items-center justify-center p-4">
+              <button
+                onClick={() => setIsFullScreen(false)}
+                className="absolute top-5 right-5 text-white hover:text-gray-300 transition-colors z-[110]"
+              >
+                <IoClose size={30} className="cursor-pointer" />
+              </button>
+
+              {/* Custom Navigation Buttons */}
+              <button
+                ref={(node) => setFsPrevEl(node)}
+                className="absolute z-[110] cursor-pointer left-5 top-1/2 -translate-y-1/2 bg-gray-800 hover:bg-gray-900 text-white p-3 rounded-full transition"
+              >
+                <IoChevronBack size={24} />
+              </button>
+              <button
+                ref={(node) => setFsNextEl(node)}
+                className="absolute z-[110] cursor-pointer right-5 top-1/2 -translate-y-1/2 bg-gray-800 hover:bg-gray-900 text-white p-3 rounded-full transition"
+              >
+                <IoChevronForward size={24} />
+              </button>
+
+              <Swiper
+                initialSlide={initialSlide}
+                loop={true}
+                navigation={{ prevEl: fsPrevEl, nextEl: fsNextEl }}
+                modules={[Navigation]}
+                className="w-full h-full"
+              >
+                {projectDetail?.images?.map((img, index) => (
+                  <SwiperSlide
+                    key={index}
+                    className="flex items-center justify-center"
+                  >
+                    <img
+                      src={IMAGE_BASE_URL + img}
+                      alt={`project-fullscreen-${index}`}
+                      className="w-full h-full object-contain"
+                    />
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+            </div>
+          )}
         </div>
       )}
     </Wrapper>
