@@ -33,11 +33,11 @@ const Blog = () => {
           {blogs?.length > 0 ? (
             blogs?.map((blog, idx) => (
               <Link key={idx} to={`/blog/${blog._id}`} className="w-full">
-                <div className="relative w-full aspect-[2.2/1] group overflow-hidden">
+                <div className="relative w-full aspect-2/1 group overflow-hidden">
                   <img
                     src={IMAGE_BASE_URL + blog.images[0]}
                     alt={`blog-${idx + 1}`}
-                    className="object-cover cursor-pointer group-hover:opacity-70 transition-opacity shadow-sm hover:shadow-md"
+                    className="w-full h-full object-cover cursor-pointer grayscale-50 group-hover:opacity-70 transition-opacity shadow-sm hover:shadow-md"
                   />
 
                   {/* Overlay text */}

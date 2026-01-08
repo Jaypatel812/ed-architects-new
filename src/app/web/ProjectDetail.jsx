@@ -9,6 +9,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import { IoChevronBack, IoChevronForward, IoClose } from "react-icons/io5";
 import { IMAGE_BASE_URL } from "../../config/constant";
+import InputLabelFormatWrapper from "../../components/ui/form/InpuLabelWrapper";
 
 const ProjectDetail = () => {
   const { id } = useParams();
@@ -63,7 +64,7 @@ const ProjectDetail = () => {
         <div className="space-y-10 text-neutral-500">
           {/* Project Image */}
           {projectDetail?.images?.length > 1 ? (
-            <div className="w-full max-w-4xl mx-auto aspect-video relative shadow-md group">
+            <div className="w-full max-w-4xl mx-auto aspect-video relative group">
               <Swiper
                 loop={true}
                 modules={[Navigation, Autoplay]}
@@ -81,7 +82,7 @@ const ProjectDetail = () => {
                     <img
                       src={IMAGE_BASE_URL + img}
                       alt={`project-${index}`}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain"
                     />
                   </SwiperSlide>
                 ))}
@@ -109,7 +110,7 @@ const ProjectDetail = () => {
                   : "/images/projects/project.jpeg"
               }
               alt="project"
-              className="w-full max-w-4xl mx-auto aspect-video object-cover shadow-md cursor-pointer"
+              className="w-full max-w-4xl mx-auto aspect-video object-cover cursor-pointer"
               onClick={() => openFullScreen(0)}
               width={800}
               height={800}
@@ -119,16 +120,40 @@ const ProjectDetail = () => {
 
           {/* Project Content */}
           <div className="space-y-6">
-            <div className="text-center font-bold text-xl sm:text-2xl md:text-3xl leading-snug">
+            <div className="text-center text-gray-900 font-bold text-xl sm:text-2xl md:text-3xl leading-snug">
               {projectDetail?.title}
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 justify-between gap-2">
-              <div>Location: {projectDetail?.location}</div>
-              <div>Client: {projectDetail?.client}</div>
-              <div>Built Up Area: {projectDetail?.builtUpArea || "N/A"}</div>
-              <div>Site Area: {projectDetail?.siteArea || "N/A"}</div>
+            <div className="grid max-w-4xl grid-cols-1 sm:grid-cols-2 justify-between mx-auto gap-2">
+              <InputLabelFormatWrapper
+                labelStyle="text-sm"
+                label="Location"
+                orientation="horizontal"
+              >
+                {projectDetail?.location}
+              </InputLabelFormatWrapper>
+              <InputLabelFormatWrapper
+                labelStyle="text-sm"
+                label="Client"
+                orientation="horizontal"
+              >
+                {projectDetail?.client}
+              </InputLabelFormatWrapper>
+              <InputLabelFormatWrapper
+                labelStyle="text-sm"
+                label="Built Up Area"
+                orientation="horizontal"
+              >
+                {projectDetail?.builtUpArea || "N/A"}
+              </InputLabelFormatWrapper>
+              <InputLabelFormatWrapper
+                labelStyle="text-sm"
+                label="Site Area"
+                orientation="horizontal"
+              >
+                {projectDetail?.siteArea || "N/A"}
+              </InputLabelFormatWrapper>
             </div>
-            <div className="space-y-4 text-justify leading-relaxed text-gray-700">
+            <div className="space-y-4 text-justify leading-relaxed">
               {projectDetail?.description.map((item, idx) => (
                 <p key={idx}>{item}</p>
               ))}
@@ -137,10 +162,10 @@ const ProjectDetail = () => {
 
           {/* Full Screen Image Slider */}
           {isFullScreen && (
-            <div className="fixed inset-0 z-[100] bg-black bg-opacity-95 flex items-center justify-center p-4">
+            <div className="fixed inset-0 z-100 bg-black bg-opacity-95 flex items-center justify-center p-4">
               <button
                 onClick={() => setIsFullScreen(false)}
-                className="absolute top-5 right-5 text-white hover:text-gray-300 transition-colors z-[110]"
+                className="absolute top-5 right-5 text-white hover:text-gray-300 transition-colors z-110"
               >
                 <IoClose size={30} className="cursor-pointer" />
               </button>
@@ -148,13 +173,13 @@ const ProjectDetail = () => {
               {/* Custom Navigation Buttons */}
               <button
                 ref={(node) => setFsPrevEl(node)}
-                className="absolute z-[110] cursor-pointer left-5 top-1/2 -translate-y-1/2 bg-gray-800 hover:bg-gray-900 text-white p-3 rounded-full transition"
+                className="absolute z-110 cursor-pointer left-5 top-1/2 -translate-y-1/2 bg-gray-800 hover:bg-gray-900 text-white p-3 rounded-full transition"
               >
                 <IoChevronBack size={24} />
               </button>
               <button
                 ref={(node) => setFsNextEl(node)}
-                className="absolute z-[110] cursor-pointer right-5 top-1/2 -translate-y-1/2 bg-gray-800 hover:bg-gray-900 text-white p-3 rounded-full transition"
+                className="absolute z-110 cursor-pointer right-5 top-1/2 -translate-y-1/2 bg-gray-800 hover:bg-gray-900 text-white p-3 rounded-full transition"
               >
                 <IoChevronForward size={24} />
               </button>

@@ -3,6 +3,7 @@ const InputLabelFormatWrapper = ({
   label,
   error,
   required,
+  labelStyle,
   orientation = "vertical",
 }) => {
   return (
@@ -12,7 +13,7 @@ const InputLabelFormatWrapper = ({
       }`}
     >
       <label
-        className={`block text-base font-medium text-gray-950 ${
+        className={`block text-base font-medium text-gray-950 ${labelStyle} ${
           orientation === "vertical" ? "w-full" : "w-1/3"
         }`}
       >

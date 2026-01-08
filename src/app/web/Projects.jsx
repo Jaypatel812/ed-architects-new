@@ -11,7 +11,9 @@ import { IMAGE_BASE_URL } from "../../config/constant";
 import SingleSelect from "../../components/ui/form/SingleSelect";
 
 const Projects = () => {
-  const [tabs, setTabs] = useState(PROJECT_TAB_TYPES.ALL);
+  const [tabs, setTabs] = useState(
+    sessionStorage.getItem("selectedProjectTab") || PROJECT_TAB_TYPES.ALL
+  );
   const [getCategories, { isLoading: categoriesLoading }] =
     useGetCategoriesMutation();
   const [getProjects, { isLoading: projectsLoading }] =
@@ -47,6 +49,7 @@ const Projects = () => {
   };
 
   useEffect(() => {
+    sessionStorage.setItem("selectedProjectTab", tabs);
     fetchProjects();
   }, [tabs]);
   useEffect(() => {
@@ -99,11 +102,11 @@ const Projects = () => {
             {projects?.length > 0 ? (
               projects?.map((item, idx) => (
                 <Link key={idx} to={`/project/${item._id}`} className="w-full">
-                  <div className="relative w-full aspect-[2.2/1] group overflow-hidden">
+                  <div className="relative w-full aspect-2/1 group overflow-hidden">
                     <img
                       src={IMAGE_BASE_URL + item.images[0]}
                       alt={`project-${idx + 1}`}
-                      className="object-cover cursor-pointer group-hover:opacity-70 transition-opacity shadow-sm hover:shadow-md"
+                      className="w-full h-full object-cover cursor-pointer grayscale-50 group-hover:opacity-70 transition-opacity shadow-sm hover:shadow-md"
                     />
 
                     {/* Overlay text */}
@@ -114,7 +117,7 @@ const Projects = () => {
                            transition-opacity flex flex-col items-center justify-end duration-1000 ease-in-out"
                     >
                       <div>{item.title}</div>
-                      <div>{item.category.name}</div>
+                      <div>{item.location}</div>
                     </div>
                   </div>
                 </Link>
