@@ -95,6 +95,19 @@ export const edApi = baseApi.injectEndpoints({
         method: "DELETE",
       }),
     }),
+    getHomeData: builder.mutation({
+      query: () => ({
+        url: "/home",
+        method: "GET",
+      }),
+    }),
+    updateHomeData: builder.mutation({
+      query: (body) => ({
+        url: "/home",
+        method: "PUT",
+        body,
+      }),
+    }),
   }),
 });
 
@@ -113,4 +126,6 @@ export const {
   useAddBlogMutation,
   useUpdateBlogMutation,
   useDeleteBlogMutation,
+  useGetHomeDataMutation,
+  useUpdateHomeDataMutation,
 } = edApi;

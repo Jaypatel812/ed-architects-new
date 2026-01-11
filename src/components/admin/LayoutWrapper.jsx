@@ -40,11 +40,11 @@ const useBreadcrumbs = () => {
     admin: { label: "Admin", href: null },
     home: { label: "Dashboard", href: "/ed/admin/home" },
     projects: { label: "Projects", href: "/ed/admin/projects" },
-    analytics: { label: "Analytics", href: "/ed/admin/analytics" },
     users: { label: "Users", href: "/ed/admin/users" },
     settings: { label: "Settings", href: "/ed/admin/settings" },
     blogs: { label: "Blogs", href: "/ed/admin/blogs" },
     categories: { label: "Categories", href: "/ed/admin/categories" },
+    homeSettings: { label: "Home Settings", href: "/ed/admin/home-settings" },
   };
 
   // Always start with Admin as home

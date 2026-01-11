@@ -18,6 +18,7 @@ import EditProject from "./components/admin/EditProject";
 import Blogs from "./app/admin/Blogs";
 import AddNewBlog from "./components/admin/AddNewBlog";
 import EditBlog from "./components/admin/EditBlog";
+import HomeSettings from "./app/admin/HomeSettings";
 
 export default function App() {
   return (
@@ -98,7 +99,14 @@ export default function App() {
                 </LayoutWrapper>
               }
             />
-            <Route path="/ed/admin/analytics" element={<LayoutWrapper />} />
+            <Route
+              path="/ed/admin/home-settings"
+              element={
+                <LayoutWrapper>
+                  <HomeSettings />
+                </LayoutWrapper>
+              }
+            />
           </Route>
 
           {/* 404 Route */}

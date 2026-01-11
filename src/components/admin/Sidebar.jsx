@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { BiBarChart, BiCategoryAlt, BiHome } from "react-icons/bi";
 import { FcCancel } from "react-icons/fc";
 import { useNavigate, useLocation } from "react-router-dom";
-import { GoProjectRoadmap } from "react-icons/go";
+import { GoHome, GoProjectRoadmap } from "react-icons/go";
 import { LuLogOut } from "react-icons/lu";
 
 // Hook to detect if screen is desktop size (>= 1024px)
@@ -29,6 +29,11 @@ export const Sidebar = ({ isOpen, setIsOpen }) => {
     { icon: BiCategoryAlt, label: "Categories", href: "/ed/admin/categories" },
     { icon: GoProjectRoadmap, label: "Projects", href: "/ed/admin/projects" },
     { icon: GoProjectRoadmap, label: "Blog", href: "/ed/admin/blogs" },
+    {
+      icon: GoHome,
+      label: "Home Settings",
+      href: "/ed/admin/home-settings",
+    },
   ];
 
   const handleNavigation = (href) => {

@@ -5,8 +5,9 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
 import { IoChevronBack, IoChevronForward } from "react-icons/io5";
+import { IMAGE_BASE_URL } from "../config/constant";
 
-const HomeSlider = () => {
+const HomeSlider = ({ carouselData }) => {
   const prevRef = useRef(null);
   const nextRef = useRef(null);
   const swiperRef = useRef(null);
@@ -38,34 +39,17 @@ const HomeSlider = () => {
         onSwiper={(swiper) => (swiperRef.current = swiper)}
         className="mySwiper"
       >
-        <SwiperSlide>
-          <img
-            src="/images/HomeBanner/Banner_1.jpg"
-            className="w-full h-[40vh] sm:h-[60vh] lg:h-[80vh] object-cover"
-            width={1920}
-            height={1080}
-            alt="banner1"
-            priority
-          />
-        </SwiperSlide>
-        <SwiperSlide>
-          <img
-            src="/images/HomeBanner/Banner_2.jpg"
-            className="w-full h-[40vh] sm:h-[60vh] lg:h-[80vh] object-cover"
-            width={1920}
-            height={1080}
-            alt="banner2"
-          />
-        </SwiperSlide>
-        <SwiperSlide>
-          <img
-            src="/images/HomeBanner/Banner_3.jpg"
-            className="w-full h-[40vh] sm:h-[60vh] lg:h-[80vh] object-cover"
-            width={1920}
-            height={1080}
-            alt="banner3"
-          />
-        </SwiperSlide>
+        {carouselData?.map((image, index) => (
+          <SwiperSlide key={index}>
+            <img
+              src={IMAGE_BASE_URL + image}
+              className="w-full h-[40vh] sm:h-[60vh] lg:h-[80vh] object-cover"
+              width={1920}
+              height={1080}
+              alt={`Banner ${index + 1}`}
+            />
+          </SwiperSlide>
+        ))}
       </Swiper>
 
       {/* Custom Navigation Buttons */}
