@@ -40,11 +40,60 @@ const Categories = () => {
   });
   const [isEdit, setIsEdit] = useState(false);
 
+  // Storage Key
+  const STORAGE_KEY = "categories_table_state";
+
+  // Initial State from Session Storage
+  const [tableState, setTableState] = useState(() => {
+    const stored = sessionStorage.getItem(STORAGE_KEY);
+    return stored
+      ? JSON.parse(stored)
+      : { pageIndex: 0, pageSize: 10, search: "" };
+  });
+
+  const { pageIndex, pageSize, search: searchQuery } = tableState;
+
+  // Local Search Input
+  const [localSearch, setLocalSearch] = useState(searchQuery);
+
+  // Persist to Session Storage
+  useEffect(() => {
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(tableState));
+  }, [tableState]);
+
+  // Debounce Search
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setTableState((prev) => {
+        if (prev.search === localSearch) return prev;
+        return { ...prev, search: localSearch, pageIndex: 0 };
+      });
+    }, 300);
+
+    return () => clearTimeout(handler);
+  }, [localSearch]);
+
+  // Pagination Handler
+  const handlePaginationChange = (updater) => {
+    setTableState((prev) => {
+      const currentPagination = {
+        pageIndex: prev.pageIndex,
+        pageSize: prev.pageSize,
+      };
+
+      const nextPagination =
+        typeof updater === "function" ? updater(currentPagination) : updater;
+
+      return { ...prev, ...nextPagination };
+    });
+  };
+
   const columns = [
     {
       header: "Sr No",
       accessorKey: "_id",
-      cell: (info) => info.row.index + 1,
+      cell: (info) =>
+        info.table.getSortedRowModel().flatRows.indexOf(info.row) + 1,
       //   width: 90,
     },
     { header: "Name", accessorKey: "name" },
@@ -161,7 +210,12 @@ const Categories = () => {
     <div>
       <div className="space-y-4">
         <div className="flex items-center justify-between bg-white p-4 rounded-md shadow-xs">
-          <InputField placeholder="Search" icon={LuSearch} />
+          <InputField
+            placeholder="Search"
+            icon={LuSearch}
+            value={localSearch}
+            onChange={(e) => setLocalSearch(e.target.value)}
+          />
           <Button onClick={() => setIsOpen(true)}>
             <BiPlus /> Add Category
           </Button>
@@ -171,7 +225,13 @@ const Categories = () => {
         ) : (
           <div>
             {categories?.length > 0 ? (
-              <DataTable columns={columns} data={categories} />
+              <DataTable
+                columns={columns}
+                data={categories}
+                globalFilter={searchQuery}
+                pagination={{ pageIndex, pageSize }}
+                onPaginationChange={handlePaginationChange}
+              />
             ) : (
               <div className="flex h-96 items-center justify-center">
                 No categories found

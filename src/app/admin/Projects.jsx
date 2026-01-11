@@ -17,6 +17,54 @@ const Projects = () => {
   const [deleteProject] = useDeleteProjectMutation();
   const [projects, setProjects] = useState([]);
 
+  // Storage Key
+  const STORAGE_KEY = "projects_table_state";
+
+  // Initial State from Session Storage
+  const [tableState, setTableState] = useState(() => {
+    const stored = sessionStorage.getItem(STORAGE_KEY);
+    return stored
+      ? JSON.parse(stored)
+      : { pageIndex: 0, pageSize: 10, search: "" };
+  });
+
+  const { pageIndex, pageSize, search: searchQuery } = tableState;
+
+  // Local Search Input
+  const [localSearch, setLocalSearch] = useState(searchQuery);
+
+  // Persist to Session Storage
+  useEffect(() => {
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(tableState));
+  }, [tableState]);
+
+  // Debounce Search
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setTableState((prev) => {
+        if (prev.search === localSearch) return prev;
+        return { ...prev, search: localSearch, pageIndex: 0 };
+      });
+    }, 300);
+
+    return () => clearTimeout(handler);
+  }, [localSearch]);
+
+  // Pagination Handler
+  const handlePaginationChange = (updater) => {
+    setTableState((prev) => {
+      const currentPagination = {
+        pageIndex: prev.pageIndex,
+        pageSize: prev.pageSize,
+      };
+
+      const nextPagination =
+        typeof updater === "function" ? updater(currentPagination) : updater;
+
+      return { ...prev, ...nextPagination };
+    });
+  };
+
   const fetchProjects = async () => {
     try {
       const res = await getProjects().unwrap();
@@ -47,7 +95,8 @@ const Projects = () => {
     {
       header: "Sr No",
       accessorKey: "_id",
-      cell: (info) => info.row.index + 1,
+      cell: (info) =>
+        info.table.getSortedRowModel().flatRows.indexOf(info.row) + 1,
       //   width: 90,
     },
     { header: "Title", accessorKey: "title", width: 150 },
@@ -117,14 +166,25 @@ const Projects = () => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between bg-white p-4 rounded-md shadow-xs">
-        <InputField placeholder="Search" icon={LuSearch} />
+        <InputField
+          placeholder="Search"
+          icon={LuSearch}
+          value={localSearch}
+          onChange={(e) => setLocalSearch(e.target.value)}
+        />
         <Button onClick={() => navigate("/ed/admin/projects/new")}>
           <BiPlus /> Add Project
         </Button>
       </div>
       <div>
         {projects?.length > 0 ? (
-          <DataTable columns={columns} data={projects} />
+          <DataTable
+            columns={columns}
+            data={projects}
+            globalFilter={searchQuery}
+            pagination={{ pageIndex, pageSize }}
+            onPaginationChange={handlePaginationChange}
+          />
         ) : (
           <div className="flex h-96 items-center justify-center">
             No projects found

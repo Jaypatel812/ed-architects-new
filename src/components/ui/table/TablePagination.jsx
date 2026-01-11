@@ -65,7 +65,7 @@ export function TablePagination({ table }) {
               className={cn(
                 "px-3 py-1 text-sm rounded-md min-w-8",
                 currentPage === pageNumber
-                  ? "bg-primary-100 text-white"
+                  ? "bg-blue-700 text-white"
                   : "text-slate-600 hover:bg-slate-100"
               )}
             >
